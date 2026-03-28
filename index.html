@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#0f172a">
+    <title>GymPro 4.0 | Sistema Completo com IML e Avaliação Física</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Face API.js -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f1f5f9;
+            min-height: 100vh;
+        }
+
+        header {
+            background: rgba(2, 6, 23, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.25rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #22c55e, #c084fc);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            padding: 1.2rem;
+            border-radius: 1rem;
+            text-align: center;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: #22c55e;
+        }
+
+        .stat-card i {
+            font-size: 1.8rem;
+            color: #22c55e;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #facc15;
+        }
+
+        /* Sections */
+        .section {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(5px);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .section h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #22c55e;
+            padding-left: 1rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: #94a3b8;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .tab-btn.active {
+            background: #22c55e;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Form */
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .input-field {
+            flex: 1 1 200px;
+        }
+
+        .input-field label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 0.25rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+            color: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        /* IML Cards */
+        .iml-card {
+            background: #0f172a;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #22c55e;
+        }
+
+        .iml-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #facc15;
+        }
+
+        .iml-classification {
+            display: inline-block;
+            padding: 0.25rem 1rem;
+            border-radius: 2rem;
+            font-weight: bold;
+        }
+
+        .iml-magreza { background: #3b82f6; color: white; }
+        .iml-normal { background: #22c55e; color: white; }
+        .iml-sobrepeso { background: #f59e0b; color: white; }
+        .iml-obesidade1 { background: #ef4444; color: white; }
+        .iml-obesidade2 { background: #dc2626; color: white; }
+        .iml-obesidade3 { background: #991b1b; color: white; }
+
+        /* Evolution Chart */
+        .evolution-container {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-top: 1rem;
+        }
+
+        canvas {
+            max-height: 300px;
+            width: 100%;
+        }
+
+        /* Grid Cards */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            border-left: 4px solid #22c55e;
+            transition: all 0.3s;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            color: #facc15;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .badge-ativo { background: #15803d; color: #dcfce7; }
+        .badge-inadimplente { background: #b91c1c; color: #fee2e2; }
+        .badge-facial { background: #7c3aed; color: #ede9fe; }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .card-actions button {
+            flex: 1;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            border-left: 4px solid #22c55e;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .filters-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #0f172a;
+            border-radius: 1rem;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-cards {
+                grid-template-columns: 1fr;
+            }
+            .form-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1><i class="fas fa-dumbbell"></i> GymPro 4.0</h1>
+    <p style="color: #94a3b8;">Sistema Completo com IML e Avaliação Física</p>
+</header>
+
+<div class="container">
+    <!-- Stats Grid -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <i class="fas fa-users"></i>
+            <h3>Total Alunos</h3>
+            <div class="value" id="totalAlunos">0</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-weight-scale"></i>
+            <h3>IML Médio</h3>
+            <div class="value" id="imlMedio">0</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-chart-line"></i>
+            <h3>Evolução Média</h3>
+            <div class="value" id="evolucaoMedia">0%</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-face-smile"></i>
+            <h3>Com Rosto</h3>
+            <div class="value" id="totalComRosto">0</div>
+        </div>
+    </div>
+
+    <!-- Abas: Cadastro / IML / Reconhecimento -->
+    <div class="section">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="mudarTab('cadastro')">
+                <i class="fas fa-user-plus"></i> Cadastro
+            </button>
+            <button class="tab-btn" onclick="mudarTab('iml')">
+                <i class="fas fa-weight-scale"></i> IML e Avaliação
+            </button>
+            <button class="tab-btn" onclick="mudarTab('facial')">
+                <i class="fas fa-face-id"></i> Reconhecimento Facial
+            </button>
+        </div>
+
+        <!-- Tab Cadastro -->
+        <div id="tabCadastro" class="tab-content active">
+            <div class="form-group">
+                <div class="input-field">
+                    <label><i class="fas fa-user"></i> Nome *</label>
+                    <input type="text" id="nome" placeholder="Nome completo">
+                </div>
+                <div class="input-field">
+                    <label><i class="fas fa-calendar"></i> Idade *</label>
+                    <input type="number" id="idade" placeholder="18">
+                </div>
+                <div class="input-field">
+                    <label><i class="fas fa-ruler"></i> Altura (cm) *</label>
+                    <input type="number" id="altura" placeholder="170" step="1">
+                </div>
+                <div class="input-field">
+                    <label><i class="fas fa-weight-scale"></i> Peso (kg) *</label>
+                    <input type="number" id="peso" placeholder="70" step="0.1">
+                </div>
+                <div class="input-field">
+                    <label><i class="fas fa-tag"></i> Plano</label>
+                    <select id="plano">
+                        <option value="Mensal">📆 Mensal</option>
+                        <option value="Anual">🏆 Anual</option>
+                    </select>
+                </div>
+                <div class="input-field">
+                    <label><i class="fas fa-credit-card"></i> Status</label>
+                    <select id="status">
+                        <option value="Ativo">✅ Ativo</option>
+                        <option value="Inadimplente">⚠️ Inadimplente</option>
+                    </select>
+                </div>
+                <div class="input-field">
+                    <label><i class="fas fa-phone"></i> Telefone</label>
+                    <input type="tel" id="telefone" placeholder="(11) 99999-9999">
+                </div>
+                <button onclick="adicionarAluno()">
+                    <i class="fas fa-save"></i> Cadastrar Aluno
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab IML e Avaliação Física -->
+        <div id="tabIml" class="tab-content">
+            <div class="form-group">
+                <div class="input-field">
+                    <label><i class="fas fa-search"></i> Selecionar Aluno</label>
+                    <select id="selectAlunoIml" onchange="carregarDadosAlunoIml()">
+                        <option value="">Selecione um aluno</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="imlInfo" style="display: none;">
+                <div class="iml-card">
+                    <h3><i class="fas fa-chart-simple"></i> Índice de Massa Corporal (IML)</h3>
+                    <div class="iml-value" id="imlValor">0</div>
+                    <div id="imlClassificacao"></div>
+                    <p id="imlDescricao"></p>
+                    <p><i class="fas fa-info-circle"></i> IML = Peso ÷ (Altura em metros)²</p>
+                </div>
+
+                <div class="iml-card">
+                    <h3><i class="fas fa-chart-line"></i> Últimas Avaliações</h3>
+                    <div id="historicoAvaliacoes"></div>
+                    <button onclick="abrirModalAvaliacao()" class="btn-secondary">
+                        <i class="fas fa-plus"></i> Nova Avaliação
+                    </button>
+                </div>
+
+                <div class="evolution-container">
+                    <h4><i class="fas fa-chart-line"></i> Evolução de Peso</h4>
+                    <canvas id="graficoEvolucao"></canvas>
+                </div>
+
+                <div class="iml-card">
+                    <h3><i class="fas fa-clipboard-list"></i> Recomendações</h3>
+                    <div id="recomendacoes"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Reconhecimento Facial -->
+        <div id="tabFacial" class="tab-content">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <h3><i class="fas fa-camera"></i> Câmera</h3>
+                    <div class="video-wrapper" style="position: relative;">
+                        <video id="video" autoplay muted playsinline style="width: 100%; border-radius: 1rem; transform: scaleX(-1);"></video>
+                        <canvas id="overlayCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+                    </div>
+                    <div class="face-status" id="faceStatus" style="margin-top: 1rem; padding: 0.75rem; background: #0f172a; border-radius: 0.75rem;">
+                        <i class="fas fa-spinner fa-spin"></i> Carregando...
+                    </div>
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                        <button id="btnRegistrarRosto" onclick="registrarRostoAtual()" disabled>
+                            <i class="fas fa-camera-retro"></i> Registrar Rosto
+                        </button>
+                        <button onclick="buscarPorRosto()">
+                            <i class="fas fa-search"></i> Buscar por Rosto
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <h3><i class="fas fa-info-circle"></i> Instruções</h3>
+                    <div style="background: #0f172a; padding: 1rem; border-radius: 1rem;">
+                        <p><i class="fas fa-check-circle" style="color: #22c55e;"></i> <strong>Registrar rosto:</strong></p>
+                        <p>1. Selecione um aluno na lista abaixo</p>
+                        <p>2. Posicione o rosto na câmera</p>
+                        <p>3. Clique em "Registrar Rosto"</p>
+                        <br>
+                        <p><i class="fas fa-search" style="color: #3b82f6;"></i> <strong>Buscar por rosto:</strong></p>
+                        <p>• Posicione o rosto e clique em "Buscar"</p>
+                        <p>• O sistema identificará automaticamente</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros e Lista -->
+    <div class="section">
+        <h2><i class="fas fa-filter"></i> Filtros</h2>
+        <div class="filters-bar">
+            <div class="filter-group">
+                <input type="text" id="busca" placeholder="🔍 Buscar por nome...">
+            </div>
+            <div class="filter-group">
+                <select id="filtroPlano">
+                    <option value="">Todos planos</option>
+                    <option value="Mensal">Mensal</option>
+                    <option value="Anual">Anual</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <select id="filtroStatus">
+                    <option value="">Todos status</option>
+                    <option value="Ativo">Ativo</option>
+                    <option value="Inadimplente">Inadimplente</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <select id="filtroIML">
+                    <option value="">Todas classificações</option>
+                    <option value="magreza">Magreza</option>
+                    <option value="normal">Normal</option>
+                    <option value="sobrepeso">Sobrepeso</option>
+                    <option value="obesidade">Obesidade</option>
+                </select>
+            </div>
+            <button onclick="exportarDados()" class="btn-secondary">
+                <i class="fas fa-download"></i> Exportar
+            </button>
+        </div>
+        
+        <h2><i class="fas fa-list"></i> Alunos Cadastrados</h2>
+        <div id="listaAlunos" class="grid-cards"></div>
+        <div id="pagination" style="margin-top: 2rem; text-align: center;"></div>
+    </div>
+</div>
+
+<!-- Modal Nova Avaliação -->
+<div id="modalAvaliacao" class="modal">
+    <div class="modal-content">
+        <h2><i class="fas fa-weight-scale"></i> Nova Avaliação Física</h2>
+        <input type="hidden" id="avaliacaoAlunoId">
+        <div class="input-field" style="margin-bottom: 1rem;">
+            <label>Peso Atual (kg)</label>
+            <input type="number" id="novoPeso" step="0.1" placeholder="Peso em kg">
+        </div>
+        <div class="input-field" style="margin-bottom: 1rem;">
+            <label>Observações</label>
+            <textarea id="observacoes" rows="3" placeholder="Observações da avaliação..."></textarea>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <button onclick="salvarAvaliacao()"><i class="fas fa-check"></i> Salvar</button>
+            <button onclick="fecharModalAvaliacao()" class="btn-danger"><i class="fas fa-times"></i> Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edição -->
+<div id="modalEditar" class="modal">
+    <div class="modal-content">
+        <h2><i class="fas fa-edit"></i> Editar Aluno</h2>
+        <input type="hidden" id="editId">
+        <div class="input-field" style="margin-bottom: 1rem;">
+            <label>Nome</label>
+            <input type="text" id="editNome">
+        </div>
+        <div class="input-field" style="margin-bottom: 1rem;">
+            <label>Idade</label>
+            <input type="number" id="editIdade">
+        </div>
+        <div class="input-field" style="margin-bottom: 1rem;">
+            <label>Altura (cm)</label>
+            <input type="number" id="editAltura">
+        </div>
+        <div class="input-field" style="margin-bottom: 1rem;">
+            <label>Peso (kg)</label>
+            <input type="number" id="editPeso" step="0.1">
+        </div>
+        <div class="input-field" style="margin-bottom: 1rem;">
+            <label>Plano</label>
+            <select id="editPlano">
+                <option>Mensal</option>
+                <option>Anual</option>
+            </select>
+        </div>
+        <div class="input-field" style="margin-bottom: 1rem;">
+            <label>Status</label>
+            <select id="editStatus">
+                <option>Ativo</option>
+                <option>Inadimplente</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <button onclick="salvarEdicao()"><i class="fas fa-check"></i> Salvar</button>
+            <button onclick="fecharModal()" class="btn-danger"><i class="fas fa-times"></i> Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== CONFIGURAÇÕES ====================
+    let alunosData = [];
+    let currentFaceDescriptor = null;
+    let selectedAlunoId = null;
+    let video = null;
+    let modelsLoaded = false;
+    let chartEvolucao = null;
+
+    // ==================== FUNÇÕES IML ====================
+    function calcularIML(alturaCm, pesoKg) {
+        if (!alturaCm || !pesoKg) return null;
+        const alturaM = alturaCm / 100;
+        const iml = pesoKg / (alturaM * alturaM);
+        return parseFloat(iml.toFixed(1));
+    }
+
+    function classificarIML(iml) {
+        if (!iml) return { classe: '', nome: '', descricao: '' };
+        if (iml < 18.5) return { classe: 'iml-magreza', nome: 'Magreza', descricao: 'Abaixo do peso ideal. Recomenda-se acompanhamento nutricional.' };
+        if (iml < 25) return { classe: 'iml-normal', nome: 'Normal', descricao: 'Peso saudável. Mantenha os hábitos!' };
+        if (iml < 30) return { classe: 'iml-sobrepeso', nome: 'Sobrepeso', descricao: 'Acima do peso ideal. Aumente atividades físicas.' };
+        if (iml < 35) return { classe: 'iml-obesidade1', nome: 'Obesidade Grau I', descricao: 'Risco moderado. Consulte um nutricionista.' };
+        if (iml < 40) return { classe: 'iml-obesidade2', nome: 'Obesidade Grau II', descricao: 'Risco elevado. Acompanhamento médico necessário.' };
+        return { classe: 'iml-obesidade3', nome: 'Obesidade Grau III', descricao: 'Risco muito elevado. Procure ajuda médica urgentemente.' };
+    }
+
+    function gerarRecomendacoes(iml, idade, plano) {
+        let recomendacoes = [];
+        if (iml < 18.5) {
+            recomendacoes.push('🍎 Aumentar ingestão calórica com alimentos nutritivos');
+            recomendacoes.push('🏋️‍♂️ Foco em treino de hipertrofia e ganho de massa muscular');
+        } else if (iml < 25) {
+            recomendacoes.push('🥗 Manter alimentação balanceada');
+            recomendacoes.push('💪 Treino variado: cardio + musculação');
+        } else if (iml < 30) {
+            recomendacoes.push('🔥 Déficit calórico moderado (500kcal/dia)');
+            recomendacoes.push('🏃‍♂️ Aumentar atividades aeróbicas (30min/dia)');
+        } else {
+            recomendacoes.push('⚠️ Acompanhamento nutricional prioritário');
+            recomendacoes.push('🚶‍♂️ Iniciar com atividades de baixo impacto');
+            recomendacoes.push('💧 Hidratação constante (2-3L de água/dia)');
+        }
+        
+        if (idade > 50) {
+            recomendacoes.push('🩺 Avaliação médica antes de iniciar treinos intensos');
+            recomendacoes.push('🧘‍♂️ Incluir alongamentos e mobilidade');
+        }
+        
+        if (plano === 'Anual') {
+            recomendacoes.push('🎯 Plano anual: check-up físico trimestral incluso');
+        }
+        
+        return recomendacoes;
+    }
+
+    // ==================== AVALIAÇÕES FÍSICAS ====================
+    function adicionarAvaliacao(alunoId, novoPeso, observacoes) {
+        const aluno = alunosData.find(a => a.id === alunoId);
+        if (!aluno) return false;
+        
+        if (!aluno.avaliacoes) aluno.avaliacoes = [];
+        
+        const iml = calcularIML(aluno.altura, novoPeso);
+        const classificacao = classificarIML(iml);
+        
+        const avaliacao = {
+            id: Date.now(),
+            data: new Date().toISOString(),
+            peso: novoPeso,
+            iml: iml,
+            classificacao: classificacao.nome,
+            observacoes: observacoes || ''
+        };
+        
+        aluno.avaliacoes.push(avaliacao);
+        aluno.peso = novoPeso;
+        aluno.iml = iml;
+        aluno.classificacaoIML = classificacao.nome;
+        
+        return true;
+    }
+
+    function getUltimasAvaliacoes(aluno, limite = 5) {
+        if (!aluno.avaliacoes) return [];
+        return [...aluno.avaliacoes].reverse().slice(0, limite);
+    }
+
+    // ==================== FACE API ====================
+    async function loadFaceModels() {
+        const faceStatus = document.getElementById('faceStatus');
+        if (faceStatus) faceStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando modelos...';
+        
+        try {
+            await faceapi.nets.ssdMobilenetv1.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights');
+            await faceapi.nets.faceLandmark68Net.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights');
+            await faceapi.nets.faceRecognitionNet.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights');
+            
+            modelsLoaded = true;
+            if (faceStatus) faceStatus.innerHTML = '<i class="fas fa-check-circle" style="color: #22c55e;"></i> Modelos carregados!';
+            iniciarCamera();
+        } catch (error) {
+            console.error('Erro:', error);
+            if (faceStatus) faceStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro ao carregar modelos.';
+        }
+    }
+
+    async function iniciarCamera() {
+        try {
+            video = document.getElementById('video');
+            if (!video) return;
+            
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            
+            video.addEventListener('play', () => {
+                const canvas = document.getElementById('overlayCanvas');
+                if (!canvas) return;
+                
+                const displaySize = { width: video.videoWidth, height: video.videoHeight };
+                faceapi.matchDimensions(canvas, displaySize);
+                
+                setInterval(async () => {
+                    if (!modelsLoaded || video.paused) return;
+                    
+                    const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options())
+                        .withFaceLandmarks()
+                        .withFaceDescriptors();
+                    
+                    const displaySize = { width: video.videoWidth, height: video.videoHeight };
+                    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    faceapi.draw.drawDetections(canvas, resizedDetections);
+                    
+                    const faceStatus = document.getElementById('faceStatus');
+                    if (detections.length > 0) {
+                        currentFaceDescriptor = detections[0].descriptor;
+                        if (faceStatus) faceStatus.innerHTML = '<i class="fas fa-face-smile" style="color: #22c55e;"></i> Rosto detectado! ✅';
+                        const btn = document.getElementById('btnRegistrarRosto');
+                        if (btn) btn.disabled = false;
+                    } else {
+                        currentFaceDescriptor = null;
+                        if (faceStatus) faceStatus.innerHTML = '<i class="fas fa-camera"></i> Nenhum rosto detectado.';
+                        const btn = document.getElementById('btnRegistrarRosto');
+                        if (btn) btn.disabled = true;
+                    }
+                }, 500);
+            });
+        } catch (error) {
+            console.error('Erro câmera:', error);
+            const faceStatus = document.getElementById('faceStatus');
+            if (faceStatus) faceStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro ao acessar câmera.';
+        }
+    }
+
+    function registrarRostoAtual() {
+        if (!selectedAlunoId) {
+            showToast('❌ Selecione um aluno primeiro!', 'error');
+            return;
+        }
+        if (!currentFaceDescriptor) {
+            showToast('❌ Nenhum rosto detectado!', 'error');
+            return;
+        }
+        
+        const aluno = alunosData.find(a => a.id === selectedAlunoId);
+        if (aluno) {
+            aluno.faceDescriptor = Array.from(currentFaceDescriptor);
+            salvarNoStorage();
+            renderizarTudo();
+            showToast(`✅ Rosto de ${aluno.nome} registrado!`, 'success');
+            selectedAlunoId = null;
+        }
+    }
+
+    async function buscarPorRosto() {
+        if (!currentFaceDescriptor) {
+            showToast('❌ Nenhum rosto detectado!', 'error');
+            return;
+        }
+        
+        const alunosComRosto = alunosData.filter(a => a.faceDescriptor);
+        if (alunosComRosto.length === 0) {
+            showToast('❌ Nenhum aluno com rosto cadastrado!', 'error');
+            return;
+        }
+        
+        let melhorMatch = null;
+        let melhorDistancia = 0.6;
+        
+        for (const aluno of alunosComRosto) {
+            const descriptorAluno = new Float32Array(aluno.faceDescriptor);
+            const distancia = faceapi.euclideanDistance(currentFaceDescriptor, descriptorAluno);
+            if (distancia < melhorDistancia) {
+                melhorDistancia = distancia;
+                melhorMatch = aluno;
+            }
+        }
+        
+        if (melhorMatch) {
+            const similaridade = ((1 - melhorDistancia) * 100).toFixed(1);
+            showToast(`🎯 Identificado: ${melhorMatch.nome} (${similaridade}%)`, 'success');
+        } else {
+            showToast('❌ Nenhum aluno correspondente.', 'error');
+        }
+    }
+
+    // ==================== STORAGE ====================
+    function carregarDoStorage() {
+        const storageData = localStorage.getItem('gympro_v4');
+        if (storageData) {
+            try {
+                const parsed = JSON.parse(storageData);
+                alunosData = parsed.alunos || [];
+            } catch(e) { dadosExemplo(); }
+        } else {
+            dadosExemplo();
+        }
+    }
+
+    function dadosExemplo() {
+        alunosData = [
+            { 
+                id: gerarIdUnico(), nome: "Ana Paula Souza", idade: 28, altura: 165, peso: 58, 
+                plano: "Anual", status: "Ativo", telefone: "(11) 99999-1234",
+                avaliacoes: [
+                    { id: 1, data: new Date().toISOString(), peso: 60, iml: 22.0, classificacao: "Normal", observacoes: "Início" },
+                    { id: 2, data: new Date(Date.now() - 30*86400000).toISOString(), peso: 58, iml: 21.3, classificacao: "Normal", observacoes: "Evolução positiva" }
+                ]
+            },
+            { 
+                id: gerarIdUnico(), nome: "Bruno Lima", idade: 34, altura: 175, peso: 85, 
+                plano: "Mensal", status: "Inadimplente", telefone: "(11) 98888-5678",
+                avaliacoes: [{ id: 1, data: new Date().toISOString(), peso: 85, iml: 27.8, classificacao: "Sobrepeso", observacoes: "" }]
+            },
+            { 
+                id: gerarIdUnico(), nome: "Camila Rocha", idade: 22, altura: 160, peso: 52, 
+                plano: "Mensal", status: "Ativo", telefone: "(11) 97777-9012",
+                avaliacoes: []
+            }
+        ];
+        
+        alunosData.forEach(aluno => {
+            const iml = calcularIML(aluno.altura, aluno.peso);
+            aluno.iml = iml;
+            const classificacao = classificarIML(iml);
+            aluno.classificacaoIML = classificacao.nome;
+            if (!aluno.avaliacoes) aluno.avaliacoes = [];
+        });
+        
+        salvarNoStorage();
+    }
+
+    function salvarNoStorage() {
+        localStorage.setItem('gympro_v4', JSON.stringify({ version: '4.0', alunos: alunosData }));
+    }
+
+    function gerarIdUnico() {
+        return Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // ==================== CRUD ====================
+    function adicionarAluno() {
+        const nome = document.getElementById('nome').value.trim();
+        const idade = parseInt(document.getElementById('idade').value);
+        const altura = parseFloat(document.getElementById('altura').value);
+        const peso = parseFloat(document.getElementById('peso').value);
+        const plano = document.getElementById('plano').value;
+        const status = document.getElementById('status').value;
+        const telefone = document.getElementById('telefone').value;
+        
+        if (!nome || !idade || !altura || !peso) {
+            showToast('Preencha todos os campos obrigatórios!', 'error');
+            return;
+        }
+        
+        const iml = calcularIML(altura, peso);
+        const classificacao = classificarIML(iml);
+        
+        const novoAluno = {
+            id: gerarIdUnico(),
+            nome: nome,
+            idade: idade,
+            altura: altura,
+            peso: peso,
+            iml: iml,
+            classificacaoIML: classificacao.nome,
+            plano: plano,
+            status: status,
+            telefone: telefone || '',
+            dataCadastro: new Date().toISOString(),
+            avaliacoes: [{
+                id: Date.now(),
+                data: new Date().toISOString(),
+                peso: peso,
+                iml: iml,
+                classificacao: classificacao.nome,
+                observacoes: 'Cadastro inicial'
+            }]
+        };
+        
+        alunosData.push(novoAluno);
+        salvarNoStorage();
+        
+        document.getElementById('nome').value = '';
+        document.getElementById('idade').value = '';
+        document.getElementById('altura').value = '';
+        document.getElementById('peso').value = '';
+        document.getElementById('telefone').value = '';
+        
+        renderizarTudo();
+        showToast(`✅ ${nome} cadastrado! IML: ${iml}`, 'success');
+    }
+
+    function selecionarAluno(id) {
+        selectedAlunoId = id;
+        const aluno = alunosData.find(a => a.id === id);
+        showToast(`🎯 ${aluno.nome} selecionado para registro facial`, 'success');
+    }
+
+    function carregarDadosAlunoIml() {
+        const select = document.getElementById('selectAlunoIml');
+        const alunoId = select.value;
+        if (!alunoId) {
+            document.getElementById('imlInfo').style.display = 'none';
+            return;
+        }
+        
+        const aluno = alunosData.find(a => a.id === alunoId);
+        if (!aluno) return;
+        
+        document.getElementById('avaliacaoAlunoId').value = alunoId;
+        document.getElementById('imlInfo').style.display = 'block';
+        
+        const iml = aluno.iml || calcularIML(aluno.altura, aluno.peso);
+        const classificacao = classificarIML(iml);
+        
+        document.getElementById('imlValor').innerHTML = `${iml} kg/m²`;
+        document.getElementById('imlClassificacao').innerHTML = `<span class="iml-classification ${classificacao.classe}">${classificacao.nome}</span>`;
+        document.getElementById('imlDescricao').innerHTML = `<i class="fas fa-info-circle"></i> ${classificacao.descricao}`;
+        
+        // Histórico
+        const avaliacoes = getUltimasAvaliacoes(aluno);
+        const historicoHtml = avaliacoes.map(av => `
+            <div style="border-bottom: 1px solid #334155; padding: 0.5rem 0;">
+                <strong>${new Date(av.data).toLocaleDateString()}</strong><br>
+                Peso: ${av.peso} kg | IML: ${av.iml}<br>
+                <small>${av.observacoes || ''}</small>
+            </div>
+        `).join('');
+        document.getElementById('historicoAvaliacoes').innerHTML = historicoHtml || '<p>Nenhuma avaliação registrada</p>';
+        
+        // Recomendações
+        const recomendacoes = gerarRecomendacoes(iml, aluno.idade, aluno.plano);
+        document.getElementById('recomendacoes').innerHTML = recomendacoes.map(r => `<p><i class="fas fa-check-circle" style="color: #22c55e;"></i> ${r}</p>`).join('');
+        
+        // Gráfico evolução
+        if (chartEvolucao) chartEvolucao.destroy();
+        const ctx = document.getElementById('graficoEvolucao').getContext('2d');
+        const dadosEvolucao = [...(aluno.avaliacoes || [])].sort((a,b) => new Date(a.data) - new Date(b.data));
+        chartEvolucao = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dadosEvolucao.map(a => new Date(a.data).toLocaleDateString()),
+                datasets: [{
+                    label: 'Peso (kg)',
+                    data: dadosEvolucao.map(a => a.peso),
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#cbd5e1' } } }
+            }
+        });
+    }
+
+    function abrirModalAvaliacao() {
+        const alunoId = document.getElementById('avaliacaoAlunoId').value;
+        if (!alunoId) {
+            showToast('Selecione um aluno primeiro!', 'error');
+            return;
+        }
+        document.getElementById('novoPeso').value = '';
+        document.getElementById('observacoes').value = '';
+        document.getElementById('modalAvaliacao').classList.add('active');
+    }
+
+    function salvarAvaliacao() {
+        const alunoId = document.getElementById('avaliacaoAlunoId').value;
+        const novoPeso = parseFloat(document.getElementById('novoPeso').value);
+        const observacoes = document.getElementById('observacoes').value;
+        
+        if (!novoPeso) {
+            showToast('Informe o peso!', 'error');
+            return;
+        }
+        
+        if (adicionarAvaliacao(alunoId, novoPeso, observacoes)) {
+            salvarNoStorage();
+            carregarDadosAlunoIml();
+            fecharModalAvaliacao();
+            renderizarTudo();
+            showToast('Avaliação registrada!', 'success');
+        }
+    }
+
+    function editarAluno(id) {
+        const aluno = alunosData.find(a => a.id === id);
+        document.getElementById('editId').value = id;
+        document.getElementById('editNome').value = aluno.nome;
+        document.getElementById('editIdade').value = aluno.idade;
+        document.getElementById('editAltura').value = aluno.altura;
+        document.getElementById('editPeso').value = aluno.peso;
+        document.getElementById('editPlano').value = aluno.plano;
+        document.getElementById('editStatus').value = aluno.status;
+        document.getElementById('modalEditar').classList.add('active');
+    }
+
+    function salvarEdicao() {
+        const id = document.getElementById('editId').value;
+        const index = alunosData.findIndex(a => a.id === id);
+        if (index !== -1) {
+            alunosData[index].nome = document.getElementById('editNome').value;
+            alunosData[index].idade = parseInt(document.getElementById('editIdade').value);
+            alunosData[index].altura = parseFloat(document.getElementById('editAltura').value);
+            alunosData[index].peso = parseFloat(document.getElementById('editPeso').value);
+            alunosData[index].plano = document.getElementById('editPlano').value;
+            alunosData[index].status = document.getElementById('editStatus').value;
+            
+            const iml = calcularIML(alunosData[index].altura, alunosData[index].peso);
+            alunosData[index].iml = iml;
+            alunosData[index].classificacaoIML = classificarIML(iml).nome;
+            
+            salvarNoStorage();
+            renderizarTudo();
+            fecharModal();
+            showToast('Aluno atualizado!', 'success');
+        }
+    }
+
+    function removerAluno(id) {
+        if (confirm('Tem certeza?')) {
+            alunosData = alunosData.filter(a => a.id !== id);
+            salvarNoStorage();
+            renderizarTudo();
+            showToast('Aluno removido!', 'success');
+        }
+    }
+
+    function fecharModal() {
+        document.getElementById('modalEditar').classList.remove('active');
+    }
+
+    function fecharModalAvaliacao() {
+        document.getElementById('modalAvaliacao').classList.remove('active');
+    }
+
+    // ==================== FILTROS ====================
+    function getAlunosFiltrados() {
+        const busca = document.getElementById('busca').value.toLowerCase();
+        const filtroPlano = document.getElementById('filtroPlano').value;
+        const filtroStatus = document.getElementById('filtroStatus').value;
+        const filtroIML = document.getElementById('filtroIML').value;
+        
+        return alunosData.filter(aluno => {
+            const matchBusca = aluno.nome.toLowerCase().includes(busca);
+            const matchPlano = !filtroPlano || aluno.plano === filtroPlano;
+            const matchStatus = !filtroStatus || aluno.status === filtroStatus;
+            
+            let matchIML = true;
+            if (filtroIML) {
+                const classificacao = aluno.classificacaoIML?.toLowerCase() || '';
+                if (filtroIML === 'magreza') matchIML = classificacao.includes('magreza');
+                else if (filtroIML === 'normal') matchIML = classificacao === 'normal';
+                else if (filtroIML === 'sobrepeso') matchIML = classificacao.includes('sobrepeso');
+                else if (filtroIML === 'obesidade') matchIML = classificacao.includes('obesidade');
+            }
+            
+            return matchBusca && matchPlano && matchStatus && matchIML;
+        });
+    }
+
+    // ==================== ESTATÍSTICAS ====================
+    function atualizarEstatisticas() {
+        const total = alunosData.length;
+        const imlMedio = total > 0 ? (alunosData.reduce((sum, a) => sum + (a.iml || 0), 0) / total).toFixed(1) : 0;
+        const comRosto = alunosData.filter(a => a.faceDescriptor).length;
+        
+        let evolucaoMedia = 0;
+        let countEvolucao = 0;
+        alunosData.forEach(aluno => {
+            if (aluno.avaliacoes && aluno.avaliacoes.length >= 2) {
+                const primeira = aluno.avaliacoes[0].peso;
+                const ultima = aluno.avaliacoes[aluno.avaliacoes.length - 1].peso;
+                const variacao = ((primeira - ultima) / primeira) * 100;
+                evolucaoMedia += variacao;
+                countEvolucao++;
+            }
+        });
+        evolucaoMedia = countEvolucao > 0 ? (evolucaoMedia / countEvolucao).toFixed(1) : 0;
+        
+        document.getElementById('totalAlunos').textContent = total;
+        document.getElementById('imlMedio').textContent = imlMedio;
+        document.getElementById('evolucaoMedia').textContent = `${evolucaoMedia > 0 ? '+' : ''}${evolucaoMedia}%`;
+        document.getElementById('totalComRosto').textContent = comRosto;
+    }
+
+    // ==================== RENDER ====================
+    let paginaAtual = 1;
+    const ITENS_POR_PAGINA = 6;
+
+    function renderizarLista() {
+        const filtrados = getAlunosFiltrados();
+        const totalPaginas = Math.ceil(filtrados.length / ITENS_POR_PAGINA);
+        const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+        const paginaAlunos = filtrados.slice(inicio, inicio + ITENS_POR_PAGINA);
+        
+        const container = document.getElementById('listaAlunos');
+        
+        if (paginaAlunos.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:2rem;">Nenhum aluno encontrado</div>';
+            return;
+        }
+        
+        container.innerHTML = paginaAlunos.map(aluno => {
+            const classificacao = classificarIML(aluno.iml);
+            return `
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-user"></i> ${escapeHtml(aluno.nome)}</h3>
+                    <span class="badge ${aluno.status === 'Ativo' ? 'badge-ativo' : 'badge-inadimplente'}">
+                        ${aluno.status === 'Ativo' ? '✅' : '⚠️'} ${aluno.status}
+                    </span>
+                </div>
+                <p><i class="fas fa-birthday-cake"></i> ${aluno.idade} anos</p>
+                <p><i class="fas fa-ruler"></i> ${aluno.altura} cm | <i class="fas fa-weight-scale"></i> ${aluno.peso} kg</p>
+                <p><i class="fas fa-chart-simple"></i> IML: <strong>${aluno.iml || calcularIML(aluno.altura, aluno.peso)}</strong> 
+                    <span class="badge ${classificacao.classe}" style="font-size: 0.7rem;">${classificacao.nome}</span>
+                </p>
+                <p><i class="fas fa-face-smile"></i> ${aluno.faceDescriptor ? '✅ Rosto registrado' : '❌ Sem rosto'}</p>
+                <div class="card-actions">
+                    <button onclick="selecionarAluno('${aluno.id}')" class="btn-secondary">
+                        <i class="fas fa-camera"></i> Registrar Rosto
+                    </button>
+                    <button onclick="editarAluno('${aluno.id}')" class="btn-secondary">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="removerAluno('${aluno.id}')" class="btn-danger">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `}).join('');
+        
+        const pagContainer = document.getElementById('pagination');
+        if (totalPaginas > 1) {
+            let pagHtml = '';
+            for (let i = 1; i <= Math.min(totalPaginas, 5); i++) {
+                pagHtml += `<button onclick="mudarPagina(${i})" style="${i === paginaAtual ? 'background: #22c55e;' : ''}">${i}</button>`;
+            }
+            pagContainer.innerHTML = pagHtml;
+        } else {
+            pagContainer.innerHTML = '';
+        }
+        
+        // Atualizar select do IML
+        const selectIml = document.getElementById('selectAlunoIml');
+        if (selectIml) {
+            selectIml.innerHTML = '<option value="">Selecione um aluno</option>' + 
+                alunosData.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+        }
+    }
+
+    function mudarPagina(pagina) {
+        paginaAtual = pagina;
+        renderizarLista();
+    }
+
+    function mudarTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function exportarDados() {
+        const dataStr = JSON.stringify(alunosData, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gympro_backup_${new Date().toISOString().slice(0,19)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Dados exportados!', 'success');
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function showToast(msg, tipo = 'success') {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fas ${tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function debounce(func, delay) {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func(...args), delay);
+        };
+    }
+
+    function renderizarTudo() {
+        atualizarEstatisticas();
+        renderizarLista();
+    }
+
+    // ==================== EVENTOS ====================
+    function configurarEventos() {
+        const buscaInput = document.getElementById('busca');
+        const filtroPlano = document.getElementById('filtroPlano');
+        const filtroStatus = document.getElementById('filtroStatus');
+        const filtroIML = document.getElementById('filtroIML');
+        
+        const debouncedRender = debounce(() => {
+            paginaAtual = 1;
+            renderizarLista();
+        }, 300);
+        
+        if (buscaInput) buscaInput.addEventListener('input', debouncedRender);
+        if (filtroPlano) filtroPlano.addEventListener('change', () => { paginaAtual = 1; renderizarLista(); });
+        if (filtroStatus) filtroStatus.addEventListener('change', () => { paginaAtual = 1; renderizarLista(); });
+        if (filtroIML) filtroIML.addEventListener('change', () => { paginaAtual = 1; renderizarLista(); });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                fecharModal();
+                fecharModalAvaliacao();
+            }
+        });
+    }
+
+    // ==================== INIT ====================
+    function init() {
+        carregarDoStorage();
+        configurarEventos();
+        renderizarTudo();
+        loadFaceModels();
+    }
+    
+    window.adicionarAluno = adicionarAluno;
+    window.selecionarAluno = selecionarAluno;
+    window.registrarRostoAtual = registrarRostoAtual;
+    window.buscarPorRosto = buscarPorRosto;
+    window.editarAluno = editarAluno;
+    window.removerAluno = removerAluno;
+    window.salvarEdicao = salvarEdicao;
+    window.fecharModal = fecharModal;
+    window.fecharModalAvaliacao = fecharModalAvaliacao;
+    window.exportarDados = exportarDados;
+    window.mudarPagina = mudarPagina;
+    window.mudarTab = mudarTab;
+    window.carregarDadosAlunoIml = carregarDadosAlunoIml;
+    window.abrirModalAvaliacao = abrirModalAvaliacao;
+    window.salvarAvaliacao = salvarAvaliacao;
+    
+    init();
+</script>
+</body>
+</html>
